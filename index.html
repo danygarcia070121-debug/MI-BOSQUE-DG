@@ -125,7 +125,6 @@ function App() {
   function key(y,m,d) { return `${y}-${m}-${d}`; }
   function isDone(d, hName) { return !!((data[key(selY,selM,d)] || {})[hName]); }
   function toggle(d, hName) {
-    if (isCurMon && d > curD) return;
     const k = key(selY,selM,d);
     setData(prev => ({ ...prev, [k]: { ...(prev[k]||{}), [hName]: !((prev[k]||{})[hName]) } }));
   }
@@ -203,7 +202,7 @@ function App() {
                 const isFut = isCurMon && d>curD;
                 return React.createElement('div', {
                   key:d, onClick:()=>toggle(d,h.name),
-                  style:{height:24,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:isToday?800:500,cursor:isFut?"default":"pointer",background:dn?color:isToday?"#f1f8e9":"#f7f7f7",color:dn?"white":isToday?"#2e7d32":"#ccc",border:`1.5px solid ${dn?color:isToday?color:"#ececec"}`,opacity:isFut?0.2:1,transition:"all 0.12s",boxShadow:dn?`0 1px 4px ${color}44`:"none"}
+                  style:{height:24,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:isToday?800:500,cursor:isFut?"default":"pointer",background:dn?color:isToday?"#f1f8e9":"#f7f7f7",color:dn?"white":isToday?"#2e7d32":"#ccc",border:`1.5px solid ${dn?color:isToday?color:"#ececec"}`,opacity:1,transition:"all 0.12s",boxShadow:dn?`0 1px 4px ${color}44`:"none"}
                 }, dn?"✓":d);
               })
             )
