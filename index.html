@@ -1,92 +1,89 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mi Bosque de Habitos</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: linear-gradient(180deg,#e8f5e9 0%,#f9fbe7 100%); min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; }
-  input { font-family: inherit; }
-  button { font-family: inherit; }
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React;
+import { useState } from "react";
 
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const STORAGE_KEY = "mi_bosque_habitos_v1";
 
 const DEFAULT_HABITS = [
-  { name: "💧 Tomar agua", reminder: "08:00", motivation: "Me hidrata y me da energía" },
-  { name: "🏃 Ejercicio", reminder: "07:00", motivation: "Me lleva a mi cuerpo ideal y mejor autoestima" },
-  { name: "📚 Leer", reminder: "21:00", motivation: "Expando mi mente cada noche" },
-  { name: "🧘 Meditar", reminder: "06:30", motivation: "Paz interior para empezar el día" },
+  { name: "💧 Tomar agua", reminder: "08:00", motivation: "Me hidrata y me da energía", color: "#29b6f6" },
+  { name: "🏃 Ejercicio", reminder: "07:00", motivation: "Me lleva a mi cuerpo ideal y mejor autoestima", color: "#ef5350" },
+  { name: "📚 Leer", reminder: "21:00", motivation: "Expando mi mente cada noche", color: "#ab47bc" },
+  { name: "🧘 Meditar", reminder: "06:30", motivation: "Paz interior para empezar el día", color: "#26a69a" },
 ];
 
-function getDays(y, m) { return new Date(y, m+1, 0).getDate(); }
+const COLORS = ["#4caf50","#29b6f6","#ef5350","#ab47bc","#ff7043","#26a69a","#ffa726","#ec407a"];
+
+function getDays(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function getOffset(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
 
-function TreeSVG({ stage, size }) {
-  size = size || 38;
-  const s = Math.min(stage, 4);
-  if (s === 0) return React.createElement('svg', {width:size,height:size,viewBox:"0 0 40 40"},
-    React.createElement('ellipse',{cx:20,cy:36,rx:8,ry:2,fill:"#d4c5a9",opacity:0.5}),
-    React.createElement('circle',{cx:20,cy:32,r:4,fill:"#a0845c",opacity:0.4})
+function PlantSVG({ pct, color, size = 56 }) {
+  const stage = pct === 0 ? 0 : pct < 25 ? 1 : pct < 50 ? 2 : pct < 75 ? 3 : 4;
+  const c = color || "#4caf50";
+  const cDark = "#2e7d32";
+  const cLight = "#a5d6a7";
+
+  if (stage === 0) return (
+    <svg width={size} height={size} viewBox="0 0 56 56">
+      <ellipse cx="28" cy="50" rx="12" ry="3" fill="#d4c5a9" opacity="0.5"/>
+      <ellipse cx="28" cy="46" rx="7" ry="4" fill="#a0845c" opacity="0.35"/>
+    </svg>
   );
-  if (s === 1) return React.createElement('svg', {width:size,height:size,viewBox:"0 0 40 40"},
-    React.createElement('ellipse',{cx:20,cy:38,rx:8,ry:2,fill:"#b8e0b0",opacity:0.4}),
-    React.createElement('rect',{x:19,y:26,width:2,height:12,rx:1,fill:"#7a5c3a"}),
-    React.createElement('ellipse',{cx:20,cy:22,rx:6,ry:7,fill:"#66bb6a"}),
-    React.createElement('ellipse',{cx:15,cy:25,rx:4,ry:3.5,fill:"#4caf50",transform:"rotate(-15,15,25)"}),
-    React.createElement('ellipse',{cx:25,cy:25,rx:4,ry:3.5,fill:"#4caf50",transform:"rotate(15,25,25)"}),
-    React.createElement('ellipse',{cx:20,cy:18,rx:4,ry:5,fill:"#81c784"})
+  if (stage === 1) return (
+    <svg width={size} height={size} viewBox="0 0 56 56">
+      <ellipse cx="28" cy="52" rx="12" ry="3" fill={cLight} opacity="0.4"/>
+      <rect x="27" y="36" width="3" height="16" rx="1.5" fill="#7a5c3a"/>
+      <ellipse cx="28" cy="30" rx="8" ry="9" fill={c}/>
+      <ellipse cx="20" cy="34" rx="6" ry="5" fill={c} opacity="0.8" transform="rotate(-20,20,34)"/>
+      <ellipse cx="36" cy="34" rx="6" ry="5" fill={c} opacity="0.8" transform="rotate(20,36,34)"/>
+      <ellipse cx="28" cy="25" rx="6" ry="7" fill={cLight}/>
+    </svg>
   );
-  if (s === 2) return React.createElement('svg', {width:size,height:size,viewBox:"0 0 40 40"},
-    React.createElement('ellipse',{cx:20,cy:38,rx:10,ry:2.5,fill:"#b8e0b0",opacity:0.5}),
-    React.createElement('rect',{x:18,y:22,width:4,height:17,rx:2,fill:"#6d4c2a"}),
-    React.createElement('ellipse',{cx:20,cy:15,rx:10,ry:11,fill:"#388e3c"}),
-    React.createElement('ellipse',{cx:13,cy:19,rx:7,ry:8,fill:"#43a047",transform:"rotate(-12,13,19)"}),
-    React.createElement('ellipse',{cx:27,cy:19,rx:7,ry:8,fill:"#43a047",transform:"rotate(12,27,19)"}),
-    React.createElement('ellipse',{cx:20,cy:10,rx:8,ry:9,fill:"#66bb6a"}),
-    React.createElement('ellipse',{cx:15,cy:9,rx:4,ry:5,fill:"#81c784",opacity:0.8})
+  if (stage === 2) return (
+    <svg width={size} height={size} viewBox="0 0 56 56">
+      <ellipse cx="28" cy="53" rx="14" ry="3" fill={cLight} opacity="0.5"/>
+      <rect x="26" y="30" width="4" height="23" rx="2" fill="#6d4c2a"/>
+      <rect x="16" y="38" width="13" height="4" rx="2" fill="#8d6e3a" transform="rotate(-10,16,38)"/>
+      <rect x="28" y="42" width="13" height="4" rx="2" fill="#8d6e3a" transform="rotate(10,28,42)"/>
+      <ellipse cx="28" cy="18" rx="16" ry="16" fill={cDark}/>
+      <ellipse cx="18" cy="23" rx="11" ry="12" fill={c} transform="rotate(-10,18,23)"/>
+      <ellipse cx="38" cy="23" rx="11" ry="12" fill={c} transform="rotate(10,38,23)"/>
+      <ellipse cx="28" cy="11" rx="11" ry="11" fill={c} opacity="0.9"/>
+      <ellipse cx="22" cy="9" rx="7" ry="8" fill={cLight} opacity="0.8"/>
+    </svg>
   );
-  if (s === 3) return React.createElement('svg', {width:size,height:size,viewBox:"0 0 40 40"},
-    React.createElement('ellipse',{cx:20,cy:39,rx:12,ry:2.5,fill:"#b8e0b0",opacity:0.5}),
-    React.createElement('rect',{x:17,y:20,width:6,height:20,rx:3,fill:"#5d3f1f"}),
-    React.createElement('rect',{x:10,y:27,width:12,height:3.5,rx:1.5,fill:"#7a5228",transform:"rotate(-8,10,27)"}),
-    React.createElement('rect',{x:19,y:29,width:12,height:3.5,rx:1.5,fill:"#7a5228",transform:"rotate(10,19,29)"}),
-    React.createElement('ellipse',{cx:20,cy:12,rx:14,ry:14,fill:"#2e7d32"}),
-    React.createElement('ellipse',{cx:12,cy:16,rx:9,ry:10,fill:"#388e3c",transform:"rotate(-8,12,16)"}),
-    React.createElement('ellipse',{cx:28,cy:16,rx:9,ry:10,fill:"#388e3c",transform:"rotate(8,28,16)"}),
-    React.createElement('ellipse',{cx:20,cy:7,rx:10,ry:10,fill:"#43a047"}),
-    React.createElement('ellipse',{cx:14,cy:6,rx:6,ry:7,fill:"#66bb6a",opacity:0.9}),
-    React.createElement('ellipse',{cx:26,cy:7,rx:5,ry:6,fill:"#66bb6a",opacity:0.7})
+  if (stage === 3) return (
+    <svg width={size} height={size} viewBox="0 0 56 56">
+      <ellipse cx="28" cy="54" rx="16" ry="3.5" fill={cLight} opacity="0.6"/>
+      <rect x="25" y="24" width="6" height="30" rx="3" fill="#5d3f1f"/>
+      <rect x="12" y="34" width="16" height="5" rx="2.5" fill="#7a5228" transform="rotate(-10,12,34)"/>
+      <rect x="29" y="38" width="16" height="5" rx="2.5" fill="#7a5228" transform="rotate(12,29,38)"/>
+      <ellipse cx="28" cy="14" rx="20" ry="19" fill={cDark}/>
+      <ellipse cx="16" cy="20" rx="13" ry="15" fill={c} transform="rotate(-8,16,20)"/>
+      <ellipse cx="40" cy="20" rx="13" ry="15" fill={c} transform="rotate(8,40,20)"/>
+      <ellipse cx="28" cy="7" rx="14" ry="13" fill={c} opacity="0.9"/>
+      <ellipse cx="21" cy="5" rx="9" ry="10" fill={cLight} opacity="0.8"/>
+      <ellipse cx="35" cy="7" rx="8" ry="9" fill={cLight} opacity="0.6"/>
+    </svg>
   );
-  return React.createElement('svg', {width:size,height:size,viewBox:"0 0 40 40"},
-    React.createElement('ellipse',{cx:20,cy:39,rx:13,ry:2.5,fill:"#b8e0b0",opacity:0.6}),
-    React.createElement('rect',{x:17,y:18,width:6,height:22,rx:3,fill:"#4a2f0f"}),
-    React.createElement('rect',{x:9,y:25,width:12,height:4,rx:2,fill:"#6b3e12",transform:"rotate(-10,9,25)"}),
-    React.createElement('rect',{x:20,y:27,width:12,height:4,rx:2,fill:"#6b3e12",transform:"rotate(10,20,27)"}),
-    React.createElement('ellipse',{cx:20,cy:13,rx:16,ry:15,fill:"#1b5e20"}),
-    React.createElement('ellipse',{cx:11,cy:17,rx:11,ry:12,fill:"#2e7d32",transform:"rotate(-8,11,17)"}),
-    React.createElement('ellipse',{cx:29,cy:17,rx:11,ry:12,fill:"#2e7d32",transform:"rotate(8,29,17)"}),
-    React.createElement('ellipse',{cx:20,cy:8,rx:13,ry:12,fill:"#388e3c"}),
-    React.createElement('ellipse',{cx:13,cy:7,rx:8,ry:9,fill:"#4caf50",opacity:0.9}),
-    React.createElement('ellipse',{cx:27,cy:8,rx:7,ry:8,fill:"#4caf50",opacity:0.7}),
-    React.createElement('ellipse',{cx:20,cy:2,rx:7,ry:7,fill:"#81c784",opacity:0.8}),
-    React.createElement('circle',{cx:13,cy:6,r:1.5,fill:"#ff7043",opacity:0.9}),
-    React.createElement('circle',{cx:27,cy:5,r:1.5,fill:"#ff7043",opacity:0.9}),
-    React.createElement('circle',{cx:20,cy:3,r:1.5,fill:"#ffcc02",opacity:0.9})
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56">
+      <ellipse cx="28" cy="54" rx="18" ry="3.5" fill={cLight} opacity="0.7"/>
+      <rect x="25" y="20" width="7" height="34" rx="3.5" fill="#4a2f0f"/>
+      <rect x="10" y="30" width="18" height="5" rx="2.5" fill="#6b3e12" transform="rotate(-12,10,30)"/>
+      <rect x="30" y="35" width="18" height="5" rx="2.5" fill="#6b3e12" transform="rotate(12,30,35)"/>
+      <ellipse cx="28" cy="11" rx="22" ry="20" fill={cDark}/>
+      <ellipse cx="14" cy="17" rx="15" ry="17" fill={c} transform="rotate(-8,14,17)"/>
+      <ellipse cx="42" cy="17" rx="15" ry="17" fill={c} transform="rotate(8,42,17)"/>
+      <ellipse cx="28" cy="5" rx="16" ry="14" fill={c} opacity="0.9"/>
+      <ellipse cx="20" cy="3" rx="10" ry="11" fill={cLight} opacity="0.85"/>
+      <ellipse cx="36" cy="4" rx="9" ry="10" fill={cLight} opacity="0.7"/>
+      <ellipse cx="28" cy="1" rx="8" ry="7" fill="white" opacity="0.4"/>
+      <circle cx="18" cy="3" r="2" fill="#ff7043" opacity="0.9"/>
+      <circle cx="38" cy="2" r="2" fill="#ff7043" opacity="0.9"/>
+      <circle cx="28" cy="1" r="2" fill="#ffcc02" opacity="0.9"/>
+    </svg>
   );
 }
 
-function App() {
+export default function App() {
   const now = new Date();
   const curY = now.getFullYear(), curM = now.getMonth(), curD = now.getDate();
 
@@ -94,94 +91,65 @@ function App() {
   const [data, setData] = useState({});
   const [selY, setSelY] = useState(curY);
   const [selM, setSelM] = useState(curM);
-  const [selD, setSelD] = useState(curD);
   const [showPicker, setShowPicker] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [newH, setNewH] = useState({ name:"", reminder:"08:00", motivation:"" });
-
-  // Cargar datos guardados
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.habits) setHabits(parsed.habits);
-        if (parsed.data) setData(parsed.data);
-      }
-    } catch(e) {}
-  }, []);
-
-  // Guardar datos automáticamente
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ habits, data })); } catch(e) {}
-  }, [habits, data]);
+  const [newH, setNewH] = useState({ name: "", reminder: "08:00", motivation: "", color: "#4caf50" });
 
   const days = getDays(selY, selM);
   const offset = getOffset(selY, selM);
   const isCurMon = selY === curY && selM === curM;
 
-  function key(y,m,d) { return `${y}-${m}-${d}`; }
-  function getDayData(d) { return data[key(selY,selM,d)] || {}; }
-
+  function key(y, m, d) { return `${y}-${m}-${d}`; }
+  function isDone(d, hName) { return !!(data[key(selY, selM, d)] || {})[hName]; }
   function toggle(d, hName) {
-    const k = key(selY,selM,d);
-    setData(prev => {
-      const day = prev[k] || {};
-      return { ...prev, [k]: { ...day, [hName]: !day[hName] } };
-    });
+    const isFut = isCurMon && d > curD;
+    if (isFut) return;
+    const k = key(selY, selM, d);
+    setData(prev => ({ ...prev, [k]: { ...(prev[k] || {}), [hName]: !((prev[k] || {})[hName]) } }));
   }
-
-  function countDone(d) {
-    const dd = getDayData(d);
-    return habits.filter(h => dd[h.name]).length;
+  function countDone(hName) {
+    return Array.from({ length: days }, (_, i) => i + 1).filter(d => isDone(d, hName)).length;
   }
-
-  function stage(d) {
-    const c = countDone(d);
-    return c===0?0:c===1?1:c===2?2:c===3?3:4;
+  function pct(hName) { return Math.round((countDone(hName) / days) * 100); }
+  function stageLabel(p) {
+    if (p === 0) return "Sin empezar";
+    if (p < 25) return "Semilla 🌱";
+    if (p < 50) return "Creciendo 🌿";
+    if (p < 75) return "Árbol joven 🌳";
+    return "Árbol pleno 🌲";
   }
-
-  const totalDone = Array.from({length:days},(_,i)=>countDone(i+1)).reduce((a,b)=>a+b,0);
-  const totalPossible = days * habits.length;
-  const pct = totalPossible > 0 ? Math.round(totalDone/totalPossible*100) : 0;
-
-  const selDayData = getDayData(selD);
-  const isFuture = isCurMon && selD > curD;
-  const selStage = stage(selD);
-  const selDone = habits.filter(h => selDayData[h.name]).length;
-
   function saveHabit() {
     if (!newH.name.trim()) return;
-    setHabits(prev => [...prev, { name:newH.name.trim(), reminder:newH.reminder, motivation:newH.motivation.trim() }]);
-    setNewH({ name:"", reminder:"08:00", motivation:"" });
+    setHabits(prev => [...prev, { name: newH.name.trim(), reminder: newH.reminder, motivation: newH.motivation.trim(), color: newH.color }]);
+    setNewH({ name: "", reminder: "08:00", motivation: "", color: "#4caf50" });
     setShowAdd(false);
   }
 
-  const stageLabels = ["Sin hábitos","1 hábito","2 hábitos","3 hábitos","4+ hábitos"];
+  const days_abbr = ["L","M","X","J","V","S","D"];
 
   return (
-    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#e8f5e9 0%,#f9fbe7 100%)",fontFamily:"'Segoe UI',system-ui,sans-serif",color:"#1a3a1a"}}>
+    <div style={{ minHeight: "100vh", background: "#f4faf4", fontFamily: "'Segoe UI',system-ui,sans-serif", color: "#1a3a1a" }}>
 
       {/* Header */}
-      <div style={{background:"rgba(255,255,255,0.95)",borderBottom:"1px solid #e0e0e0",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50}}>
+      <div style={{ background: "white", borderBottom: "1px solid #e8f5e9", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
         <div>
-          <h1 style={{margin:0,fontSize:18,fontWeight:800,color:"#2e7d32"}}>🌲 Mi Bosque</h1>
-          <p style={{margin:0,fontSize:11,color:"#888"}}>{pct}% este mes · {totalDone} hábitos completados</p>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#2e7d32" }}>🌿 Mis Hábitos</h1>
+          <p style={{ margin: 0, fontSize: 11, color: "#aaa" }}>{MONTHS[selM]} {selY}</p>
         </div>
-        <div style={{position:"relative"}}>
-          <button onClick={()=>setShowPicker(v=>!v)} style={{padding:"8px 14px",borderRadius:20,border:"1.5px solid #4caf50",background:"white",color:"#2e7d32",fontWeight:700,cursor:"pointer",fontSize:13}}>
-            {MONTHS[selM].slice(0,3)} {selY} ▾
+        <div style={{ position: "relative" }}>
+          <button onClick={() => setShowPicker(v => !v)} style={{ padding: "8px 14px", borderRadius: 20, border: "1.5px solid #4caf50", background: "white", color: "#2e7d32", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+            {MONTHS[selM].slice(0, 3)} {selY} ▾
           </button>
           {showPicker && (
-            <div style={{position:"absolute",right:0,top:44,background:"white",borderRadius:16,boxShadow:"0 8px 32px rgba(0,0,0,0.15)",padding:14,zIndex:100,width:240}}>
-              <div style={{display:"flex",gap:6,marginBottom:10}}>
-                {[curY-1,curY,curY+1].map(y=>(
-                  <button key={y} onClick={()=>setSelY(y)} style={{flex:1,padding:"6px 0",borderRadius:8,border:`1.5px solid ${selY===y?"#4caf50":"#ddd"}`,background:selY===y?"#e8f5e9":"white",color:selY===y?"#2e7d32":"#555",fontWeight:selY===y?700:400,cursor:"pointer",fontSize:12}}>{y}</button>
+            <div style={{ position: "absolute", right: 0, top: 44, background: "white", borderRadius: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.15)", padding: 14, zIndex: 100, width: 240 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                {[curY - 1, curY, curY + 1].map(y => (
+                  <button key={y} onClick={() => setSelY(y)} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: `1.5px solid ${selY === y ? "#4caf50" : "#ddd"}`, background: selY === y ? "#e8f5e9" : "white", color: selY === y ? "#2e7d32" : "#555", fontWeight: selY === y ? 700 : 400, cursor: "pointer", fontSize: 12 }}>{y}</button>
                 ))}
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
-                {MONTHS.map((m,i)=>(
-                  <button key={i} onClick={()=>{setSelM(i);setSelD(1);setShowPicker(false);}} style={{padding:"7px 0",borderRadius:8,border:`1.5px solid ${selM===i?"#4caf50":"#eee"}`,background:selM===i?"#e8f5e9":"white",color:selM===i?"#2e7d32":"#444",fontWeight:selM===i?700:400,cursor:"pointer",fontSize:12}}>{m.slice(0,3)}</button>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                {MONTHS.map((m, i) => (
+                  <button key={i} onClick={() => { setSelM(i); setShowPicker(false); }} style={{ padding: "7px 0", borderRadius: 8, border: `1.5px solid ${selM === i ? "#4caf50" : "#eee"}`, background: selM === i ? "#e8f5e9" : "white", color: selM === i ? "#2e7d32" : "#444", fontWeight: selM === i ? 700 : 400, cursor: "pointer", fontSize: 12 }}>{m.slice(0, 3)}</button>
                 ))}
               </div>
             </div>
@@ -189,124 +157,104 @@ function App() {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div style={{padding:"10px 16px 0"}}>
-        <div style={{height:8,background:"rgba(0,0,0,0.07)",borderRadius:8,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#2e7d32,#81c784)",borderRadius:8,transition:"width 0.6s"}}/>
-        </div>
-      </div>
+      <div style={{ padding: "14px 14px 40px" }}>
+        {habits.map(h => {
+          const p = pct(h.name);
+          const done = countDone(h.name);
+          const color = h.color || "#4caf50";
+          return (
+            <div key={h.name} style={{ background: "white", borderRadius: 20, marginBottom: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", overflow: "hidden" }}>
 
-      <div style={{padding:"12px 16px 40px"}}>
-
-        {/* Forest grid */}
-        <div style={{background:"white",borderRadius:20,padding:14,marginBottom:14,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-          <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:"#2e7d32"}}>🗓 {MONTHS[selM]} {selY}</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
-            {["L","M","X","J","V","S","D"].map(d=>(
-              <div key={d} style={{textAlign:"center",fontSize:10,color:"#aaa",paddingBottom:4,fontWeight:600}}>{d}</div>
-            ))}
-            {Array.from({length:offset}).map((_,i)=><div key={`e${i}`}/>)}
-            {Array.from({length:days},(_,i)=>i+1).map(d=>{
-              const st = stage(d);
-              const isToday = isCurMon && d===curD;
-              const isSel = d===selD;
-              const isFut = isCurMon && d>curD;
-              return (
-                <div key={d} onClick={()=>!isFut&&setSelD(d)}
-                  style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"3px 1px",borderRadius:10,cursor:isFut?"default":"pointer",background:isSel?"rgba(76,175,80,0.12)":isToday?"rgba(76,175,80,0.06)":"transparent",border:`2px solid ${isSel?"#4caf50":isToday?"rgba(76,175,80,0.3)":"transparent"}`,opacity:isFut?0.3:1,transition:"all 0.2s"}}>
-                  <TreeSVG stage={st} size={36}/>
-                  <span style={{fontSize:9,color:isToday?"#2e7d32":"#999",fontWeight:isToday?700:400}}>{d}</span>
+              {/* Top section */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 14px 10px" }}>
+                <PlantSVG pct={p} color={color} size={60} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#1b5e20" }}>{h.name}</p>
+                    <button onClick={() => setHabits(prev => prev.filter(x => x.name !== h.name))} style={{ background: "none", border: "none", fontSize: 20, color: "#ddd", cursor: "pointer", lineHeight: 1 }}>×</button>
+                  </div>
+                  {h.motivation && <p style={{ margin: "2px 0 4px", fontSize: 11, color: "#aaa", fontStyle: "italic" }}>{h.motivation}</p>}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color }}>{stageLabel(p)}</span>
+                    <span style={{ fontSize: 11, color: "#bbb" }}>{done}/{days} días · {p}%</span>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-          <div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-            {[0,1,2,3,4].map(s=>(
-              <div key={s} style={{display:"flex",alignItems:"center",gap:3,fontSize:10,color:"#888"}}>
-                <TreeSVG stage={s} size={16}/> {stageLabels[s]}
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Day card */}
-        <div style={{background:"white",borderRadius:20,padding:16,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <TreeSVG stage={selStage} size={60}/>
-            <div>
-              <p style={{margin:0,fontWeight:800,fontSize:16,color:"#1b5e20"}}>
-                {MONTHS[selM]} {selD}{isCurMon&&selD===curD?" — Hoy 🌟":""}
-              </p>
-              <p style={{margin:0,fontSize:12,color:"#888"}}>{selDone} de {habits.length} hábitos{isFuture?" · Día futuro":""}</p>
-              {selStage<4&&!isFuture&&habits.length>0&&(
-                <p style={{margin:"3px 0 0",fontSize:11,color:"#43a047"}}>+{habits.length-selDone} más para el árbol grande 🌲</p>
-              )}
+              {/* Days grid */}
+              <div style={{ padding: "4px 14px 12px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
+                  {days_abbr.map(d => (
+                    <div key={d} style={{ textAlign: "center", fontSize: 8, color: "#ccc", fontWeight: 700, paddingBottom: 2 }}>{d}</div>
+                  ))}
+                  {Array.from({ length: offset }).map((_, i) => <div key={`e${i}`} />)}
+                  {Array.from({ length: days }, (_, i) => i + 1).map(d => {
+                    const done = isDone(d, h.name);
+                    const isToday = isCurMon && d === curD;
+                    const isFut = isCurMon && d > curD;
+                    return (
+                      <div
+                        key={d}
+                        onClick={() => toggle(d, h.name)}
+                        style={{
+                          height: 24,
+                          borderRadius: 5,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 9,
+                          fontWeight: isToday ? 800 : 500,
+                          cursor: isFut ? "default" : "pointer",
+                          background: done ? color : isToday ? "#f1f8e9" : "#f7f7f7",
+                          color: done ? "white" : isToday ? "#2e7d32" : "#ccc",
+                          border: `1.5px solid ${done ? color : isToday ? color : "#ececec"}`,
+                          opacity: isFut ? 0.2 : 1,
+                          transition: "all 0.12s",
+                          boxShadow: done ? `0 1px 4px ${color}44` : "none",
+                        }}
+                      >
+                        {done ? "✓" : d}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Add habit */}
+        {showAdd ? (
+          <div style={{ background: "white", borderRadius: 20, padding: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: 10 }}>
+            <input autoFocus placeholder="🌱 Nombre del hábito" value={newH.name} onChange={e => setNewH(p => ({ ...p, name: e.target.value }))} onKeyDown={e => e.key === "Enter" && saveHabit()}
+              style={{ padding: "10px 12px", borderRadius: 10, border: "1.5px solid #c8e6c9", fontSize: 14, outline: "none" }} />
+            <input placeholder="💬 Motivación" value={newH.motivation} onChange={e => setNewH(p => ({ ...p, motivation: e.target.value }))}
+              style={{ padding: "10px 12px", borderRadius: 10, border: "1.5px solid #c8e6c9", fontSize: 14, outline: "none" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, color: "#888" }}>⏰ Hora:</span>
+              <input type="time" value={newH.reminder} onChange={e => setNewH(p => ({ ...p, reminder: e.target.value }))}
+                style={{ padding: "8px 10px", borderRadius: 10, border: "1.5px solid #c8e6c9", fontSize: 14, outline: "none", flex: 1 }} />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, color: "#888" }}>🎨 Color:</span>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {COLORS.map(c => (
+                  <div key={c} onClick={() => setNewH(p => ({ ...p, color: c }))}
+                    style={{ width: 26, height: 26, borderRadius: "50%", background: c, cursor: "pointer", border: newH.color === c ? "3px solid #333" : "3px solid transparent", transition: "border 0.15s" }} />
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={saveHabit} style={{ flex: 1, padding: "11px", borderRadius: 12, border: "none", background: "#4caf50", color: "white", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Guardar 🌱</button>
+              <button onClick={() => setShowAdd(false)} style={{ padding: "11px 14px", borderRadius: 12, border: "1.5px solid #ddd", background: "white", color: "#888", cursor: "pointer" }}>✕</button>
             </div>
           </div>
-
-          {habits.map(h=>{
-            const done = !!selDayData[h.name];
-            return (
-              <div key={h.name} style={{marginBottom:8,borderRadius:14,border:`1.5px solid ${done?"#a5d6a7":"#ececec"}`,background:done?"#f1f8f1":"#fafafa"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px"}}>
-                  <div onClick={()=>!isFuture&&toggle(selD,h.name)}
-                    style={{width:24,height:24,borderRadius:"50%",flexShrink:0,background:done?"#4caf50":"white",border:`2px solid ${done?"#4caf50":"#ccc"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"white",fontWeight:700,cursor:isFuture?"default":"pointer",transition:"all 0.2s"}}>
-                    {done?"✓":""}
-                  </div>
-                  <div style={{flex:1,cursor:isFuture?"default":"pointer"}} onClick={()=>!isFuture&&toggle(selD,h.name)}>
-                    <p style={{margin:0,fontSize:14,fontWeight:600,color:done?"#2e7d32":"#333",textDecoration:done?"line-through":"none"}}>{h.name}</p>
-                    {h.motivation&&<p style={{margin:"2px 0 0",fontSize:11,color:"#999",fontStyle:"italic"}}>{h.motivation}</p>}
-                    {h.reminder&&<p style={{margin:"1px 0 0",fontSize:10,color:"#bbb"}}>⏰ {h.reminder}</p>}
-                  </div>
-                  <button onClick={()=>setHabits(prev=>prev.filter(x=>x.name!==h.name))}
-                    style={{background:"none",border:"none",fontSize:20,color:"#ddd",cursor:"pointer",padding:"0 4px",lineHeight:1}}>×</button>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Botón + Agregar hábito */}
-          <div style={{marginTop:12}}>
-            {showAdd ? (
-              <div style={{display:"flex",flexDirection:"column",gap:8,padding:12,borderRadius:14,border:"1.5px solid #c8e6c9",background:"#f9fef9"}}>
-                <input autoFocus placeholder="🌱 Nombre del hábito (ej: 🍎 Comer sano)" value={newH.name}
-                  onChange={e=>setNewH(p=>({...p,name:e.target.value}))}
-                  onKeyDown={e=>e.key==="Enter"&&saveHabit()}
-                  style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #c8e6c9",fontSize:14,outline:"none",background:"white"}}/>
-                <input placeholder="💬 Motivación (¿por qué lo haces?)" value={newH.motivation}
-                  onChange={e=>setNewH(p=>({...p,motivation:e.target.value}))}
-                  style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #c8e6c9",fontSize:14,outline:"none",background:"white"}}/>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:12,color:"#888"}}>⏰ Recordatorio:</span>
-                  <input type="time" value={newH.reminder}
-                    onChange={e=>setNewH(p=>({...p,reminder:e.target.value}))}
-                    style={{padding:"7px 10px",borderRadius:10,border:"1.5px solid #c8e6c9",fontSize:14,outline:"none",background:"white"}}/>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={saveHabit}
-                    style={{flex:1,padding:"10px",borderRadius:12,border:"none",background:"#4caf50",color:"white",fontWeight:700,cursor:"pointer",fontSize:14}}>
-                    Guardar 🌱
-                  </button>
-                  <button onClick={()=>{setShowAdd(false);setNewH({name:"",reminder:"08:00",motivation:""});}}
-                    style={{padding:"10px 14px",borderRadius:12,border:"1.5px solid #ddd",background:"white",color:"#888",cursor:"pointer",fontSize:14}}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button onClick={()=>setShowAdd(true)}
-                style={{width:"100%",padding:"12px",borderRadius:14,border:"2px dashed #a5d6a7",background:"transparent",color:"#388e3c",fontWeight:700,cursor:"pointer",fontSize:15}}>
-                + Agregar hábito
-              </button>
-            )}
-          </div>
-        </div>
+        ) : (
+          <button onClick={() => setShowAdd(true)} style={{ width: "100%", padding: "14px", borderRadius: 18, border: "2px dashed #a5d6a7", background: "transparent", color: "#388e3c", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
+            + Agregar hábito
+          </button>
+        )}
       </div>
     </div>
   );
 }
-
-ReactDOM.render(React.createElement(App), document.getElementById('root'));
-</script>
-</body>
-</html>
